@@ -1,0 +1,362 @@
+{
+  "info": {
+    "_postman_id": "session-booking-api-v1",
+    "name": "Session Booking API",
+    "description": "REST API for booking sessions with teachers. Run requests in the order shown for a complete end-to-end test flow.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000", "type": "string" },
+    { "key": "teacherId", "value": "", "type": "string" },
+    { "key": "userId", "value": "", "type": "string" },
+    { "key": "sessionId", "value": "", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "Health Check",
+      "item": [
+        {
+          "name": "GET /health",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/health", "host": ["{{baseUrl}}"], "path": ["health"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Teachers",
+      "item": [
+        {
+          "name": "POST /teachers — Create Teacher",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.success && res.data && res.data._id) {",
+                  "  pm.collectionVariables.set('teacherId', res.data._id);",
+                  "  console.log('teacherId saved:', res.data._id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Dr. Rohit Sharma\",\n  \"email\": \"rohit.sharma@school.com\",\n  \"specialization\": \"Computer Science\",\n  \"experience\": 8\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/teachers", "host": ["{{baseUrl}}"], "path": ["teachers"] }
+          }
+        },
+        {
+          "name": "GET /teachers — List All Teachers",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/teachers", "host": ["{{baseUrl}}"], "path": ["teachers"] }
+          }
+        },
+        {
+          "name": "POST /teachers — Duplicate Email (409)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Another Teacher\",\n  \"email\": \"rohit.sharma@school.com\",\n  \"specialization\": \"Math\",\n  \"experience\": 3\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/teachers", "host": ["{{baseUrl}}"], "path": ["teachers"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "POST /users — Create User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.success && res.data && res.data._id) {",
+                  "  pm.collectionVariables.set('userId', res.data._id);",
+                  "  console.log('userId saved:', res.data._id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Arjun Mehta\",\n  \"email\": \"arjun.mehta@gmail.com\",\n  \"phone\": \"+91-9876543210\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/users", "host": ["{{baseUrl}}"], "path": ["users"] }
+          }
+        },
+        {
+          "name": "POST /users — Duplicate Email (409)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Another User\",\n  \"email\": \"arjun.mehta@gmail.com\",\n  \"phone\": \"+91-1111111111\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/users", "host": ["{{baseUrl}}"], "path": ["users"] }
+          }
+        },
+        {
+          "name": "POST /users — Missing Fields (400)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Incomplete User\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/users", "host": ["{{baseUrl}}"], "path": ["users"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Sessions",
+      "item": [
+        {
+          "name": "POST /sessions — Create Session (Today)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const now = new Date();",
+                  "const start = new Date(now);",
+                  "start.setHours(start.getHours() + 2, 0, 0, 0);",
+                  "const end = new Date(start);",
+                  "end.setHours(end.getHours() + 1);",
+                  "pm.environment.set('sessionStart', start.toISOString());",
+                  "pm.environment.set('sessionEnd', end.toISOString());"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.success && res.data && res.data._id) {",
+                  "  pm.collectionVariables.set('sessionId', res.data._id);",
+                  "  console.log('sessionId saved:', res.data._id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"teacherId\": \"{{teacherId}}\",\n  \"startTime\": \"{{sessionStart}}\",\n  \"endTime\": \"{{sessionEnd}}\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/sessions", "host": ["{{baseUrl}}"], "path": ["sessions"] }
+          }
+        },
+        {
+          "name": "POST /sessions — Invalid Teacher (404)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"teacherId\": \"000000000000000000000000\",\n  \"startTime\": \"2025-12-01T10:00:00.000Z\",\n  \"endTime\": \"2025-12-01T11:00:00.000Z\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/sessions", "host": ["{{baseUrl}}"], "path": ["sessions"] }
+          }
+        },
+        {
+          "name": "POST /sessions — endTime <= startTime (400)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"teacherId\": \"{{teacherId}}\",\n  \"startTime\": \"2025-12-01T11:00:00.000Z\",\n  \"endTime\": \"2025-12-01T10:00:00.000Z\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/sessions", "host": ["{{baseUrl}}"], "path": ["sessions"] }
+          }
+        },
+        {
+          "name": "GET /sessions/available — Today's Sessions",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.environment.set('todayTs', Date.now().toString());"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/sessions/available?dateTimestamp={{todayTs}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["sessions", "available"],
+              "query": [{ "key": "dateTimestamp", "value": "{{todayTs}}" }]
+            }
+          }
+        },
+        {
+          "name": "GET /sessions/available — Missing Param (400)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/sessions/available", "host": ["{{baseUrl}}"], "path": ["sessions", "available"] }
+          }
+        },
+        {
+          "name": "POST /sessions/:id/book — Book Session",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"{{userId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/sessions/{{sessionId}}/book",
+              "host": ["{{baseUrl}}"],
+              "path": ["sessions", "{{sessionId}}", "book"]
+            }
+          }
+        },
+        {
+          "name": "POST /sessions/:id/book — Already Booked (409)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"{{userId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/sessions/{{sessionId}}/book",
+              "host": ["{{baseUrl}}"],
+              "path": ["sessions", "{{sessionId}}", "book"]
+            }
+          }
+        },
+        {
+          "name": "POST /sessions/:id/book — Invalid User (404)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"000000000000000000000000\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/sessions/{{sessionId}}/book",
+              "host": ["{{baseUrl}}"],
+              "path": ["sessions", "{{sessionId}}", "book"]
+            }
+          }
+        },
+        {
+          "name": "PATCH /sessions/:id/complete — Mark Complete",
+          "request": {
+            "method": "PATCH",
+            "url": {
+              "raw": "{{baseUrl}}/sessions/{{sessionId}}/complete",
+              "host": ["{{baseUrl}}"],
+              "path": ["sessions", "{{sessionId}}", "complete"]
+            }
+          }
+        },
+        {
+          "name": "PATCH /sessions/:id/complete — Already Completed (409)",
+          "request": {
+            "method": "PATCH",
+            "url": {
+              "raw": "{{baseUrl}}/sessions/{{sessionId}}/complete",
+              "host": ["{{baseUrl}}"],
+              "path": ["sessions", "{{sessionId}}", "complete"]
+            }
+          }
+        },
+        {
+          "name": "PATCH /sessions/:id/complete — Invalid ID (400)",
+          "request": {
+            "method": "PATCH",
+            "url": {
+              "raw": "{{baseUrl}}/sessions/invalid-id/complete",
+              "host": ["{{baseUrl}}"],
+              "path": ["sessions", "invalid-id", "complete"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "User Sessions",
+      "item": [
+        {
+          "name": "GET /users/:id/sessions — User Session History",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/users/{{userId}}/sessions",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "{{userId}}", "sessions"]
+            }
+          }
+        },
+        {
+          "name": "GET /users/:id/sessions — User Not Found (404)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/users/000000000000000000000000/sessions",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "000000000000000000000000", "sessions"]
+            }
+          }
+        },
+        {
+          "name": "GET /users/:id/sessions — Invalid ObjectId (400)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/users/not-a-valid-id/sessions",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "not-a-valid-id", "sessions"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Error Cases",
+      "item": [
+        {
+          "name": "GET /unknown-route — 404",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/unknown-route", "host": ["{{baseUrl}}"], "path": ["unknown-route"] }
+          }
+        }
+      ]
+    }
+  ]
+}
